@@ -41,3 +41,35 @@ I tested the API manually and it was returning the results as intended.
 TODO:\\\
 
 - Add tests for the API
+
+## The Web project setup
+
+For the Web project I decided to use `Blazor` as I hadn't had a chance to touch it for a long time (nearly 4 years) which resulted in me finding myself down a rabbit hole half way through since I needed to get access to browser APIs and it wasn't easy to find information on how to do so.
+
+First thing first I added the app registration information in the `appsettings.json` file. I also had to add the API app registration info separately including the API URI, required scope and the resource id.
+
+Since I needed to get a hold of the access_token, I had to to create a token provider and setup the `Blazor` app to get it using the context, however, that didn't work until I found out that I had to add a configuration in the `startup.cs` file to tell the app it should save the token for later use and also specify the API resource and its scope to be included in the token as well.
+
+Then I had to add the necessary code to the `_Host.chtml` file to not only get the token from `HttpContext`, but also the JavaScript method to use the `geolocation API` and get the current coordinates of the user expose it as a method so I can call it from my `Blazor` app and get the coordinates (StackOverflow saved my bacon here 😎).
+
+Next I created a service called `HttpClientService` to be able to make HTTP calls to the API. Within that service I needed to inject the token provider to be able to get the access token. This service also had a method which gets the latitude and longitude, then construct a request and sends it to the API to get the nearby trucks.
+
+Then I cleaned up the unnecessary default pages and started the UI in the `Index.razor` file. First I added three inputs to hold the latitude, longitude, and accuracy (these are passed from JavaScript).
+
+Next was to inject the `IJSRuntime` to be able to call the JavaScript function I defined earlier. Here I had to work around the fact that serialization is not the same between the browser APIs and `C#`.
+
+I used the `OnAfterRenderAsync` method to get the coordinates from `JavaScript` and then update the UI.
+
+Next I had to put a button there to call the API and show the results. After a few back and forth things started to work and I was happy with the results. This was after roughly half a day BTW.
+
+I added a flag later to enable to inputs so that if someone wants to enter the latitude and longitude manually then would be able to do so.
+
+Again, I didn't get a chance to write tests for it as well.
+
+## Things that I would do differently
+
+- I would definitely use local secret for the app registration secret and a `keyvault` ref if the app is deployed to **Azure**.
+
+- Writing tests would be a definite especially integration tests between the Web and the API projects, unit tests for the API and UI tests for the Blazor app.
+
+- I would also clean up the code a bit and make it more reusable.

@@ -1,7 +1,115 @@
 ﻿@page "/"
+@inject IJSRuntime JS
+@using FoodTruckLocator.Model
+@using FoodTruckLocator.Web.Data
+@using Newtonsoft.Json
+@inject HttpClientService httpService
 
-<h1>Hello, world!</h1>
+<h1>Food truck locator</h1>
 
-Welcome to your new app.
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@if (@Coordinates == null)
+{
+    <div>Looking for your current location...</div>
+}
+else
+{
+
+    <div>
+        <h3>You are here today:</h3>
+        <div class="form-group">
+            <label for="latuitude">Latitude:</label>
+            <input type="text" 
+                class="form-control" 
+                id="latuitude" 
+                readonly="@AutoLocationMode"
+                @bind="Coordinates.Latitude"
+                aria-describedby="latitude"/>            
+        </div>
+        <div class="form-group">
+            <label for="longitude">Longitude:</label>
+            <input type="text" 
+                class="form-control" 
+                id="longitude" 
+                readonly="@AutoLocationMode"
+                @bind="Coordinates.Longitude"
+                aria-describedby="longitude"/>            
+        </div>
+        <div class="form-group">
+            <label for="accuracy">Accuracy:</label>
+            <input type="text" 
+                class="form-control" 
+                id="accuracy" 
+                readonly="@AutoLocationMode"
+                @bind="Coordinates.Accuracy"
+                aria-describedby="accuracy"/>            
+        </div>        
+        <div>
+            <button type="button" class="btn btn-primary" @onclick="FindFoodTrucks">
+                I am famished!!!
+            </button>
+            <button type="button" class="btn btn-secondary" @onclick="ToggleAutoLocationing">
+                I don't trust you 🗺️
+            </button>
+        </div>
+    </div>
+    <br/>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Address</th>
+                <th>Days/Hours</th>
+                <th>Menu</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (trucks != null)
+            {
+                foreach (var truck in trucks)
+                {
+                    <tr>
+                        <td>@truck.Address</td>
+                        <td>@truck.DaysHours</td>
+                        <td>@truck.FoodItems</td>
+                    </tr>
+                }    
+            }
+            
+        </tbody>
+    </table>
+}
+
+
+
+@code {
+    protected bool AutoLocationMode { get; set; } = true;
+    private IEnumerable<MobileFoodFacility> trucks = null;
+    private GeoCoordinates Coordinates = null;
+    private string coords;    
+
+    protected void ToggleAutoLocationing()
+    {
+        AutoLocationMode = !AutoLocationMode;
+        Coordinates.Accuracy = 0;
+    }
+    protected async Task FindFoodTrucks()
+    {
+        trucks = await httpService.GetNearbyTrucksAsync(@Coordinates.Latitude, @Coordinates.Longitude);        
+    }
+
+    protected override async Task OnAfterRenderAsync(bool first)
+    {
+        if(first)
+        {
+            coords = await JS.InvokeAsync<string>("getCoords");
+            Coordinates = JsonConvert.DeserializeObject<GeoCoordinates>(coords);
+            if (Coordinates != null)
+            {
+                StateHasChanged();                
+            }
+            
+        }
+        
+    }
+}
+

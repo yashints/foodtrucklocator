@@ -1,4 +1,15 @@
-﻿
+﻿@using FoodTruckLocator.Web.Data
+@inject TokenProvider Service
+@code {
+    [Parameter]
+    public TokenProvider InitialState { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Service.AccessToken = InitialState.AccessToken;
+        base.OnInitialized();
+    }
+}
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(Program).Assembly">
         <Found Context="routeData">

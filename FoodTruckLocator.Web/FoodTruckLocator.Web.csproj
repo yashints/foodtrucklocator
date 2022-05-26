@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.1.25" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FoodTruckLocator.Model\FoodTruckLocator.Model.csproj" />
+  </ItemGroup>
+
 </Project>

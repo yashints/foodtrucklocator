@@ -1,6 +1,6 @@
 ﻿<AuthorizeView>
     <Authorized>
-        Hello, @context.User.Identity.Name!
+        Welcome @context.User.Claims.FirstOrDefault(c => c.Type.Contains("givenname")).Value
         <a href="AzureAD/Account/SignOut">Log out</a>
     </Authorized>
     <NotAuthorized>
